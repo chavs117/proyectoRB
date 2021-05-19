@@ -7,27 +7,27 @@ from datetime import datetime
 
 app = Sanic("App Name")
 
-conn = Connection(arangoURL="http://localhost:1234",username="root", password="doorandy123")
-db = conn["proyecto_dinamita"]
+conn = Connection(arangoURL="http://localhost:8529",username="root", password="password")
+db = conn["proyecto_rojobaya"]
 
 @app.route("/guardarData", methods=["POST"])
 async def echo(request):
 	if request.json:
 		doc=(request.json)
-		ahora = datetime.now()
+		ahora = datetime.now().isoformat()
 		doc['fecha_hora'] = ahora
 		bind = {"doc": doc}
 		aql = "INSERT @doc INTO sensores LET newDoc = NEW RETURN newDoc"
 		queryResult = db.AQLQuery(aql, rawResults = True, bindVars=bind)
 		res = [a for a in queryResult]
 		return response.json(res)
-	return json({"R":"NO fue un json"})
+	return json({"R":"No fue un json"})
 	
 @app.route('/obtenerData',methods=['POST'])
 async def estados(request):
 	if request.json:
 		doc=(request.json)
-		print(doc)
+		#print(doc)
 		if doc['fecha1']=='' or doc['fecha2']=='':
 			aql = 'FOR doc IN sensores RETURN doc'
 			queryResult = db.AQLQuery(aql, rawResults = True, batchSize=100)
@@ -46,4 +46,4 @@ async def estados(request):
 		return response.json(res)
 
 if __name__ == "__main__":
-	app.run(host="0.0.0.0", port=8000)
+	app.run(host="api.dinamita.site", port=8000)
